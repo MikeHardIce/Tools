@@ -1,0 +1,22 @@
+[project]
+name = "file-search"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "MikeHardIce",email = "mikehardice@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click (>=8.3.1,<9.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "file_search", from = "src"}]
+
+[tool.poetry.scripts]
+main = "file_search.main:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
