@@ -22,7 +22,6 @@ class Search(ABC):
         super().__init__()
         self._fun_step_results = fun_step_results
 
-    @abstractmethod
     def go(self, folder: str, file_pattern: str, folder_pattern: str = "") -> Set[str]:
         """
         Search for files in a given folder
@@ -36,7 +35,26 @@ class Search(ABC):
         :return: A list of file paths. Contains folder paths if a folder pattern was given without using a file pattern.
         :rtype: List[str]
         """
-        pass
+        files: Set[str] = set()
+
+        result = self.step(folder, file_pattern, folder_pattern)
+
+        folders = deque(result.folders if result.folders else []) 
+        files.union(result.files) if result.files else None
+        self.notify(result)        
+
+        while len(folders) > 0:
+            result = self.step(self.pick_item(folders), file_pattern, folder_pattern)
+
+            folders.extend(result.folders)
+            files.union(result.files)
+            self.notify(result)
+
+        return files
+
+    @abstractmethod
+    def pick_item(self, q: deque) -> str:
+        return ""
 
     def step(self, folder, file_pattern, folder_pattern = "") -> Result:
 
@@ -79,22 +97,11 @@ class Search(ABC):
     
 class BreadthFirstSearch(Search):
     
-    def go(self, folder: str, file_pattern: str, folder_pattern: str = "") -> Set[str]: 
-
-        files: Set[str] = set()
-
-        result = self.step(folder, file_pattern, folder_pattern)
-
-        folders = deque(result.folders if result.folders else []) 
-        files.union(result.files) if result.files else None
-        self.notify(result)        
-
-        while len(folders) > 0:
-            result = self.step(folders.popleft(), file_pattern, folder_pattern)
-
-            folders.extend(result.folders)
-            files.union(result.files)
-            self.notify(result)
-
-        return files
+    def pick_item(self, q):
+        return q.popleft()
+        
     
+class DepthFirstSearch(Search):
+    
+    def pick_item(self, q):
+        return q.pop()
