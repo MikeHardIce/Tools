@@ -16,10 +16,14 @@ def print_partial_results(elements: List[str]):
 @click.option("--folder-pattern", default=".*", help="regex pattern for folders")
 @click.option("--show-folders", is_flag = True, default=False, help="True - show folders in output, False to disable")
 @click.option("-v","--verbose", is_flag = True, default=False)
+@click.option("--limit", default="-1", help="Limit the results and stop after reaching the limit")
 @click.argument("folder")
 @click.argument("pattern")
-def main(algo: str, folder_pattern: str, show_folders: bool, verbose: bool, folder: str, pattern: str):
+def main(algo: str, folder_pattern: str, show_folders: bool, verbose: bool
+         , limit: int, folder: str, pattern: str):
     
+    limit = int(limit)
+
     if folder.strip() == "." or folder.strip() == "":
         folder = os.getcwd()
 
@@ -36,7 +40,7 @@ def main(algo: str, folder_pattern: str, show_folders: bool, verbose: bool, fold
 
     search.show_folder = show_folders
     search.verbose = verbose
-    search.go(folder, pattern, folder_pattern)
+    search.go(folder, pattern, folder_pattern, limit)
 
 if __name__ == "__main__":
     main()

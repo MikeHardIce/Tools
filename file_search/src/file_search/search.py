@@ -22,7 +22,7 @@ class Search(ABC):
         super().__init__()
         self._fun_step_results = fun_step_results
 
-    def go(self, folder: str, file_pattern: str, folder_pattern: str = "") -> Set[str]:
+    def go(self, folder: str, file_pattern: str, folder_pattern: str = "", limit: int = 0) -> Set[str]:
         """
         Search for files in a given folder
         
@@ -40,14 +40,18 @@ class Search(ABC):
         result = self.step(folder, file_pattern, folder_pattern)
 
         folders = deque(result.folders if result.folders else []) 
-        files.union(result.files) if result.files else None
+        files = files.union(result.files) 
         self.notify(result)        
 
         while len(folders) > 0:
+
+            if limit > 0 and len(files) > limit:
+                break
+
             result = self.step(self.pick_item(folders), file_pattern, folder_pattern)
 
             folders.extend(result.folders)
-            files.union(result.files)
+            files = files.union(result.files)
             self.notify(result)
 
         return files
@@ -56,13 +60,13 @@ class Search(ABC):
     def pick_item(self, q: deque) -> str:
         return ""
 
-    def step(self, folder, file_pattern, folder_pattern = "") -> Result:
+    def step(self, folder, file_pattern, path_pattern = "") -> Result:
 
         elements = self.get_files(folder)
 
-        files = Search.get_files_matching(elements, file_pattern)
+        files = Search.get_files_matching(elements, file_pattern, path_pattern)
 
-        folders = Search.get_dirs_matching(elements, folder_pattern)
+        folders = Search.filter_dirs(elements)
 
         return Result(files, folders)
     
@@ -85,15 +89,16 @@ class Search(ABC):
                     print(f"Cannot access folder '{folder}'")
         return []
 
-    def get_files_matching(files: List[str], pattern: str) -> List[str]:
+    def get_files_matching(files: List[str], pattern: str, path_pattern: str) -> List[str]:
         """Returns only the file paths that match the given pattern"""
 
-        return list(filter(lambda file: os.path.isfile(file) and re.match(pattern, os.path.basename(file)), files))
+        return list(filter(lambda file: os.path.isfile(file) and re.match(pattern, os.path.abspath(file))
+                           and re.match(path_pattern, os.path.dirname(file)), files))
 
-    def get_dirs_matching(files: List[str], pattern: str) -> List[str]:
-        """Returns only the directory paths that match the given pattern"""
+    def filter_dirs(files: List[str]) -> List[str]:
+        """Returns only the directory paths"""
 
-        return list(filter(lambda file: os.path.isdir(file) and re.match(pattern, os.path.basename(file)), files))
+        return list(filter(lambda file: os.path.isdir(file), files))
     
 class BreadthFirstSearch(Search):
     
