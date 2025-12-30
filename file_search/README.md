@@ -5,14 +5,11 @@ A little tool to search for files based on a regex pattern. Optional only search
 
 `poetry run main ~ "^.*\.toml$"`
 
-Currently only with BFS (Breadth First Search), DFS will follow. See
+Currently only with BFS (Breadth First Search) and DFS (Depth First Search). See
 
 `poetry run main --help`
 
 TODO:
-* DFS
-* Cancel after n results
-* Folder pattern not to prevent search of child folders etc. To only restrict if to files (not folders) within a folder matching the
-  folder pattern.
-* read and prep for pipx git installation
+* tests
+* read and prep for pipx git installation or similar easy execution
 * potentially running concurrently
